@@ -1,0 +1,63 @@
+server:
+  port: 8123
+  servlet:
+    context-path: /api    #指定访问后端的上下文路径，即localhost:8123/api
+    # cookie 30 天过期
+    session:
+      cookie:
+        max-age: 2592000
+spring:
+  application:
+    name: zou-picture-backend  #指定项目名称，没啥用，有仪式感
+    #数据库配置
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/zou_picture
+    username: root
+    password: 151212
+  #redis配置
+  redis:
+    database: 0
+    host: 110.40.137.152
+    port: 6379
+    timeout: 5000
+    password: 151212
+  redisson:
+    single-server:
+      address: redis://110.40.137.152:6379
+      password: 151212
+      database: 0
+      timeout: 3000
+  # session 配置
+  session:
+    store-type: redis
+    # session 30 天过期
+    timeout: 2592000
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: false
+    # 仅在开发环境开启日志
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      logic-delete-field: isDelete # 全局逻辑删除的实体字段名
+      logic-delete-value: 1 # 逻辑已删除值（默认为 1）
+      logic-not-delete-value: 0 # 逻辑未删除值（默认为 0）
+
+# 接口文档配置
+knife4j:
+  enable: true
+  openapi:
+    title: "接口文档"
+    version: 1.0
+    group:
+      default:
+        api-rule: package
+        api-rule-resources:
+          - com.zr.yunbackend.controller
+
