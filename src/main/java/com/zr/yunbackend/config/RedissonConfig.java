@@ -17,6 +17,6 @@ public class RedissonConfig {
               .setTimeout(3000)
               .setPassword("151212")
               .setDatabase(0);
-        return  Redisson.create(config);
+        return  Redisson.create(config);   //注意这里要返回redissonClient，和名称对应，因为@Resource会按名称找到bean注入
     }
 }

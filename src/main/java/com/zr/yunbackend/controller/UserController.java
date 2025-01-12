@@ -8,7 +8,6 @@ import com.zr.yunbackend.constant.UserConstant;
 import com.zr.yunbackend.exception.BusinessException;
 import com.zr.yunbackend.exception.ErrorCode;
 import com.zr.yunbackend.exception.ThrowUtils;
-import com.zr.yunbackend.manage.CosManager;
 import com.zr.yunbackend.model.dto.user.*;
 import com.zr.yunbackend.model.entity.User;
 import com.zr.yunbackend.model.vo.LoginUserVO;
@@ -77,6 +76,8 @@ public class UserController {
         final String DEFAULT_PASSWORD = "12345678";
         String encryptPassword = userService.getEncryptPassword(DEFAULT_PASSWORD);
         user.setUserPassword(encryptPassword);
+        // 设置默认扩图额度
+        user.setOutPaintingQuota(20);
         boolean result = userService.save(user);
         ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
         return ResultUtils.success(user.getId());
@@ -90,6 +91,13 @@ public class UserController {
         User user = userService.getById(id);
         ThrowUtils.throwIf(user == null, ErrorCode.NOT_FOUND_ERROR);
         return ResultUtils.success(user);
+    }
+
+    //获取用户的扩图剩余额度
+    @GetMapping("/get/quota")
+    public BaseResponse<Integer> getUserQuota(HttpServletRequest request) {
+        User loginUser = userService.getLoginUser(request);
+        return ResultUtils.success(loginUser.getOutPaintingQuota());
     }
 
     //根据 id 获取包装类

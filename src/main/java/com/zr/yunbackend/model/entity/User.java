@@ -63,6 +63,9 @@ public class User implements Serializable {
      */
     private Date updateTime;
 
+    // 扩图额度
+    private Integer outPaintingQuota;
+
     /**
      * 是否删除（逻辑删除）
      */

@@ -22,12 +22,19 @@ spring:
     port: 6379
     timeout: 5000
     password: 151212
+  #分布式锁+限流
   redisson:
     single-server:
       address: redis://110.40.137.152:6379
       password: 151212
       database: 0
       timeout: 3000
+    # rabbitmq 信息
+  rabbitmq:
+      host: 110.40.137.152
+      password: Zr13970309103
+      username: guest
+      port: 5672             #5672默认是RabbitMQ的web端管理平台的端口；5672是MQ访问的端口
   # session 配置
   session:
     store-type: redis

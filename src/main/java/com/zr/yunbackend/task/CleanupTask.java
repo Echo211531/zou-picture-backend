@@ -1,7 +1,6 @@
 package com.zr.yunbackend.task;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.zr.yunbackend.manage.CosManager;
+import com.zr.yunbackend.manager.CosManager;
 import com.zr.yunbackend.service.PictureService;
 import com.zr.yunbackend.model.entity.Picture;
 import org.springframework.scheduling.annotation.Scheduled;

@@ -1,4 +1,5 @@
 package com.zr.yunbackend.service.impl;
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
@@ -7,23 +8,26 @@ import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.zr.yunbackend.api.aliyunai.AliYunApi;
+import com.zr.yunbackend.api.aliyunai.model.CreateOutPaintingTaskRequest;
+import com.zr.yunbackend.api.aliyunai.model.CreateOutPaintingTaskResponse;
 import com.zr.yunbackend.exception.BusinessException;
 import com.zr.yunbackend.exception.ErrorCode;
 import com.zr.yunbackend.exception.ThrowUtils;
-import com.zr.yunbackend.manage.upload.FilePictureUpload;
-import com.zr.yunbackend.manage.upload.PictureUploadTemplate;
-import com.zr.yunbackend.manage.upload.UrlPictureUpload;
+import com.zr.yunbackend.manager.upload.FilePictureUpload;
+import com.zr.yunbackend.manager.upload.PictureUploadTemplate;
+import com.zr.yunbackend.manager.upload.UrlPictureUpload;
 import com.zr.yunbackend.model.dto.file.UploadPictureResult;
-import com.zr.yunbackend.model.dto.picture.PictureQueryRequest;
-import com.zr.yunbackend.model.dto.picture.PictureReviewRequest;
-import com.zr.yunbackend.model.dto.picture.PictureUploadByBatchRequest;
-import com.zr.yunbackend.model.dto.picture.PictureUploadRequest;
+import com.zr.yunbackend.model.dto.picture.*;
+import com.zr.yunbackend.model.entity.Message;
 import com.zr.yunbackend.model.entity.Picture;
 import com.zr.yunbackend.model.entity.Space;
 import com.zr.yunbackend.model.entity.User;
 import com.zr.yunbackend.model.enums.PictureReviewStatusEnum;
 import com.zr.yunbackend.model.vo.PictureVO;
 import com.zr.yunbackend.model.vo.UserVO;
+import com.zr.yunbackend.mq.AiMessageProducer;
+import com.zr.yunbackend.service.MessageService;
 import com.zr.yunbackend.service.PictureService;
 import com.zr.yunbackend.mapper.PictureMapper;
 import com.zr.yunbackend.service.SpaceService;
@@ -40,14 +44,10 @@ import org.springframework.transaction.support.TransactionTemplate;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -504,6 +504,73 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
         return this.list(queryWrapper);  // 使用 MyBatis-Plus 提供的 list 方法进行查询
     }
 
+    @Resource
+    AliYunApi aliYunApi;
+    @Resource
+    MessageService messageService;
+   @Resource
+    AiMessageProducer aiMessageProducer;
+    //创建扩图任务
+    @Override
+    public void createPictureOutPaintingTask(CreatePictureOutPaintingTaskRequest createPictureOutPaintingTaskRequest,
+                                                                      User loginUser) {
+        // 获取图片信息
+        Long pictureId = createPictureOutPaintingTaskRequest.getPictureId();
+        //把有可能为空的对象封装到Optional中
+        Picture picture = Optional.ofNullable(this.getById(pictureId))
+                //如果为空，就执行这个方法抛异常
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND_ERROR));
+        // 权限图片空间校验
+        checkPictureAuth(loginUser, picture);
+
+        CreateOutPaintingTaskRequest taskRequest = new CreateOutPaintingTaskRequest();
+        CreateOutPaintingTaskRequest.Input input = new CreateOutPaintingTaskRequest.Input();
+        input.setImageUrl(picture.getUrl()); //传入图片url
+        taskRequest.setInput(input);    //传入input到请求体中
+        //把前端传来剩余的扩图属性 赋值到请求体中
+        BeanUtil.copyProperties(createPictureOutPaintingTaskRequest, taskRequest);
+        //AI扩图结果
+        CreateOutPaintingTaskResponse result;
+        result= transactionTemplate.execute(status -> {
+            // 检查是否有足够的扩图额度
+            if (loginUser.getOutPaintingQuota() <= 0) {
+                throw new BusinessException(ErrorCode.OPERATION_ERROR, "额度不足");
+            }
+            // 预扣费
+            boolean update = userService.lambdaUpdate()
+                    .eq(User::getId, loginUser.getId())  //更新指定id的空间
+                    //当前额度=原本额度-1
+                    .setSql("outPaintingQuota = outPaintingQuota - " + 1)
+                    .update();
+            ThrowUtils.throwIf(!update, ErrorCode.OPERATION_ERROR, "额度更新失败");
+            try{
+                //执行扩图
+                return aliYunApi.createOutPaintingTask(taskRequest);
+
+            }catch (Exception e){
+              userService.lambdaUpdate()
+                        .eq(User::getId, loginUser.getId())  //更新指定id的空间
+                        //当前额度=原本额度+1
+                        .setSql("outPaintingQuota = outPaintingQuota + " + 1)
+                        .update();
+                status.setRollbackOnly(); // 确保事务回滚
+                throw e; // 重新抛出异常以确保调用方知道任务失败
+            }
+        });
+        //执行完扩图后，创建一个Message实体并保存到数据库
+        Message message = new Message();
+        message.setTaskId(result.getOutput().getTaskId());
+        message.setUserId(loginUser.getId());
+        message.setEndTime(new Date());
+        message.setTaskStatus(result.getOutput().getTaskStatus());
+        message.setRequestId(result.getOutput().getTaskId()); //设置请求唯一标识
+        messageService.save(message);
+
+        // 发布消息到RabbitMQ，仅包含必要的信息
+        aiMessageProducer.sendMessage(result.getOutput().getTaskId());
+
+        // 返回操作成功信息
+    }
 }
 
 

@@ -1,4 +1,4 @@
-package com.zr.yunbackend.manage.upload;
+package com.zr.yunbackend.manager.upload;
 
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.StrUtil;

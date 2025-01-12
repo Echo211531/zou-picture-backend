@@ -1,19 +1,11 @@
 package com.zr.yunbackend.service;
-
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.zr.yunbackend.model.dto.file.UploadUserPictureResult;
-import com.zr.yunbackend.model.dto.picture.PictureQueryRequest;
-import com.zr.yunbackend.model.dto.picture.PictureReviewRequest;
-import com.zr.yunbackend.model.dto.picture.PictureUploadByBatchRequest;
-import com.zr.yunbackend.model.dto.picture.PictureUploadRequest;
+import com.zr.yunbackend.model.dto.picture.*;
 import com.zr.yunbackend.model.entity.Picture;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.zr.yunbackend.model.entity.User;
 import com.zr.yunbackend.model.vo.PictureVO;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.multipart.MultipartFile;
-
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
@@ -35,4 +27,5 @@ public interface PictureService extends IService<Picture> {
     void checkPictureAuth(User loginUser, Picture picture);
     List<Picture> getPicturesBySpaceId(Long spaceId);
     void deletePicture(long pictureId, User loginUser);
+    void createPictureOutPaintingTask(CreatePictureOutPaintingTaskRequest createPictureOutPaintingTaskRequest, User loginUser);
 }

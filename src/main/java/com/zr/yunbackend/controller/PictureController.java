@@ -1,11 +1,14 @@
 package com.zr.yunbackend.controller;
-import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.zr.yunbackend.annotation.AuthCheck;
+import com.zr.yunbackend.api.aliyunai.AliYunApi;
+import com.zr.yunbackend.api.aliyunai.model.CreateOutPaintingTaskResponse;
+import com.zr.yunbackend.api.aliyunai.model.GetOutPaintingTaskResponse;
 import com.zr.yunbackend.common.BaseResponse;
 import com.zr.yunbackend.common.DeleteRequest;
 import com.zr.yunbackend.common.ResultUtils;
@@ -13,9 +16,8 @@ import com.zr.yunbackend.constant.UserConstant;
 import com.zr.yunbackend.exception.BusinessException;
 import com.zr.yunbackend.exception.ErrorCode;
 import com.zr.yunbackend.exception.ThrowUtils;
-import com.zr.yunbackend.manage.FileManager;
-import com.zr.yunbackend.manage.upload.FilePictureUpload;
-import com.zr.yunbackend.manage.upload.PictureUploadTemplate;
+import com.zr.yunbackend.manager.FileManager;
+import com.zr.yunbackend.manager.RedisLimiterManager;
 import com.zr.yunbackend.model.dto.file.UploadUserPictureResult;
 import com.zr.yunbackend.model.dto.picture.*;
 import com.zr.yunbackend.model.entity.Picture;
@@ -29,11 +31,12 @@ import com.zr.yunbackend.service.SpaceService;
 import com.zr.yunbackend.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RLock;
+import org.redisson.api.RateLimiterConfig;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
-import org.springframework.transaction.support.TransactionTemplate;
+
 import org.springframework.util.DigestUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -359,6 +362,40 @@ public class PictureController {
         pictureService.doPictureReview(pictureReviewRequest, loginUser);
         return ResultUtils.success(true);
     }
+
+    @Resource
+    private RedisLimiterManager redisLimiterManager;
+    /**
+     * 创建 AI 扩图任务
+     */
+    @PostMapping("/out_painting/create_task")
+    public BaseResponse<Void> createPictureOutPaintingTask(
+            @RequestBody CreatePictureOutPaintingTaskRequest createPictureOutPaintingTaskRequest,
+            HttpServletRequest request) {
+        if (createPictureOutPaintingTaskRequest == null || createPictureOutPaintingTaskRequest.getPictureId() == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        User loginUser = userService.getLoginUser(request);
+        //限流判断
+        //每个用户一个限流器
+        redisLimiterManager.doRateLimit("createPictureByAi"+loginUser.getId());
+        // 调用service创建扩图任务，但不再直接返回结果给前端
+        pictureService.createPictureOutPaintingTask(createPictureOutPaintingTaskRequest, loginUser);
+        // 返回操作成功信息给前端
+        return ResultUtils.success(null);
+    }
+
+    //    @Resource
+//    AliYunApi aliYunApi;
+//    /**
+//     * 查询 AI 扩图任务
+//     */
+//    @GetMapping("/out_painting/get_task")
+//    public BaseResponse<GetOutPaintingTaskResponse> getPictureOutPaintingTask(String taskId) {
+//        ThrowUtils.throwIf(StrUtil.isBlank(taskId), ErrorCode.PARAMS_ERROR);
+//        GetOutPaintingTaskResponse task = aliYunApi.getOutPaintingTask(taskId); //直接调用taskId查看即可
+//        return ResultUtils.success(task);
+//    }
 
 }
 

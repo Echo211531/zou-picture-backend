@@ -1,4 +1,4 @@
-package com.zr.yunbackend.manage;
+package com.zr.yunbackend.manager;
 
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.io.FileUtil;

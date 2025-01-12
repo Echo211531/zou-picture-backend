@@ -15,6 +15,7 @@
             <result property="editTime" column="editTime" jdbcType="TIMESTAMP"/>
             <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
             <result property="updateTime" column="updateTime" jdbcType="TIMESTAMP"/>
+            <result property="outPaintingQuota" column="outPaintingQuota" jdbcType="INTEGER"/>
             <result property="isDelete" column="isDelete" jdbcType="TINYINT"/>
     </resultMap>
 

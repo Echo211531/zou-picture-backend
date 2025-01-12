@@ -8,7 +8,7 @@ public class PageRequest {
     private int current = 1;
 
     //页面大小
-    private int pageSize = 10;
+    private int pageSize = 20;
 
     //排序字段
     private String sortField;

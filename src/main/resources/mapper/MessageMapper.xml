@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zr.yunbackend.mapper.MessageMapper">
+
+    <resultMap id="BaseResultMap" type="com.zr.yunbackend.model.entity.Message">
+            <id property="id" column="id" jdbcType="BIGINT"/>
+            <result property="taskId" column="taskId" jdbcType="BIGINT"/>
+            <result property="taskStatus" column="taskStatus" jdbcType="VARCHAR"/>
+            <result property="requestId" column="requestId" jdbcType="VARCHAR"/>
+            <result property="outputImageUrl" column="outputImageUrl" jdbcType="VARCHAR"/>
+            <result property="endTime" column="endTime" jdbcType="TIMESTAMP"/>
+            <result property="userId" column="userId" jdbcType="BIGINT"/>
+            <result property="isDelete" column="isDelete" jdbcType="TINYINT"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,taskId,taskStatus,requestId,
+          outputImageUrl,endTime,userId,isDelete
+    </sql>
+</mapper>

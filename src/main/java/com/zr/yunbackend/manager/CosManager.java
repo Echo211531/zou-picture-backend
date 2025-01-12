@@ -1,4 +1,4 @@
-package com.zr.yunbackend.manage;
+package com.zr.yunbackend.manager;
 import cn.hutool.core.io.FileUtil;
 import com.qcloud.cos.COSClient;
 import com.qcloud.cos.exception.CosClientException;

@@ -1,4 +1,4 @@
-package com.zr.yunbackend.manage.upload;
+package com.zr.yunbackend.manager.upload;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
@@ -6,14 +6,13 @@ import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.RandomUtil;
 import com.qcloud.cos.model.PutObjectResult;
-import com.qcloud.cos.model.UploadResult;
 import com.qcloud.cos.model.ciModel.persistence.CIObject;
 import com.qcloud.cos.model.ciModel.persistence.ImageInfo;
 import com.qcloud.cos.model.ciModel.persistence.ProcessResults;
 import com.zr.yunbackend.config.CosClientConfig;
 import com.zr.yunbackend.exception.BusinessException;
 import com.zr.yunbackend.exception.ErrorCode;
-import com.zr.yunbackend.manage.CosManager;
+import com.zr.yunbackend.manager.CosManager;
 import com.zr.yunbackend.model.dto.file.UploadPictureResult;
 import lombok.extern.slf4j.Slf4j;
 
