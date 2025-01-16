@@ -1,6 +1,7 @@
 package com.zr.yunbackend.controller;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.zr.yunbackend.annotation.AuthCheck;
+import com.zr.yunbackend.auth.SpaceUserAuthManager;
 import com.zr.yunbackend.common.BaseResponse;
 import com.zr.yunbackend.common.DeleteRequest;
 import com.zr.yunbackend.common.ResultUtils;
@@ -42,6 +43,8 @@ public class SpaceController {
     private PictureService pictureService;
     @Resource
     private TransactionTemplate transactionTemplate;
+    @Resource
+    private SpaceUserAuthManager spaceUserAuthManager;
 
     //创建空间
     @PostMapping("/add")
@@ -148,6 +151,9 @@ public class SpaceController {
         ThrowUtils.throwIf(space == null, ErrorCode.NOT_FOUND_ERROR);
         SpaceVO spaceVO = spaceService.getSpaceVO(space, request);
         User loginUser = userService.getLoginUser(request);
+        //获取当前用户的权限，返回给前端
+        List<String> permissionList = spaceUserAuthManager.getPermissionList(space, loginUser);
+        spaceVO.setPermissionList(permissionList);
         // 获取封装类
         return ResultUtils.success(spaceVO);
     }

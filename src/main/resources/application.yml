@@ -31,10 +31,37 @@ spring:
       timeout: 3000
     # rabbitmq 信息
   rabbitmq:
-      host: 110.40.137.152
-      password: Zr13970309103
-      username: guest
-      port: 5672             #5672默认是RabbitMQ的web端管理平台的端口；5672是MQ访问的端口
+    host: 110.40.137.152
+    password: Zr13970309103
+    username: guest
+    port: 5672             #5672默认是RabbitMQ的web端管理平台的端口；5672是MQ访问的端口
+  # 空间图片分表
+  shardingsphere:
+    datasource:
+      names: zou_picture  #指定逻辑库名
+      zou_picture: #配置数据库连接
+        type: com.zaxxer.hikari.HikariDataSource
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        url: jdbc:mysql://localhost:3306/zou_picture
+        username: root
+        password: 151212
+    rules: #分表算法
+      sharding: # 动态分表
+        tables:
+          picture:
+            actual-data-nodes: zou_picture.picture  #实际表结点
+            table-strategy:
+              standard:
+                sharding-column: spaceId   #指定分表字段
+                sharding-algorithm-name: picture_sharding_algorithm   # 使用自定义分片算法
+        sharding-algorithms:
+          picture_sharding_algorithm:
+            type: CLASS_BASED     #基于类的自定义算法
+            props:
+              strategy: standard  #标准策略
+              algorithmClassName: com.zr.yunbackend.manager.sharding.PictureShardingAlgorithm
+    props:
+      sql-show: true
   # session 配置
   session:
     store-type: redis
@@ -55,6 +82,7 @@ mybatis-plus:
       logic-delete-field: isDelete # 全局逻辑删除的实体字段名
       logic-delete-value: 1 # 逻辑已删除值（默认为 1）
       logic-not-delete-value: 0 # 逻辑未删除值（默认为 0）
+    enable-sql-runner: true
 
 # 接口文档配置
 knife4j:
