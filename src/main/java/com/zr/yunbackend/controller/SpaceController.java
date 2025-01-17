@@ -1,7 +1,7 @@
 package com.zr.yunbackend.controller;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.zr.yunbackend.annotation.AuthCheck;
-import com.zr.yunbackend.auth.SpaceUserAuthManager;
+import com.zr.yunbackend.manager.auth.SpaceUserAuthManager;
 import com.zr.yunbackend.common.BaseResponse;
 import com.zr.yunbackend.common.DeleteRequest;
 import com.zr.yunbackend.common.ResultUtils;
@@ -19,7 +19,6 @@ import com.zr.yunbackend.service.PictureService;
 import com.zr.yunbackend.service.SpaceService;
 import com.zr.yunbackend.service.UserService;
 import lombok.extern.slf4j.Slf4j;
-import org.checkerframework.framework.qual.Covariant;
 import org.springframework.beans.BeanUtils;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.bind.annotation.*;
@@ -151,10 +150,9 @@ public class SpaceController {
         ThrowUtils.throwIf(space == null, ErrorCode.NOT_FOUND_ERROR);
         SpaceVO spaceVO = spaceService.getSpaceVO(space, request);
         User loginUser = userService.getLoginUser(request);
-        //获取当前用户的权限，返回给前端
-        List<String> permissionList = spaceUserAuthManager.getPermissionList(space, loginUser);
-        spaceVO.setPermissionList(permissionList);
-        // 获取封装类
+        //获取当前用户的权限，返回给前端，分开写会设置不进去
+        spaceVO.setPermissionList(spaceUserAuthManager.getPermissionList(space, loginUser));
+        // 返回封装类
         return ResultUtils.success(spaceVO);
     }
 

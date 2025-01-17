@@ -1,4 +1,4 @@
-package com.zr.yunbackend.mq;
+package com.zr.yunbackend.manager.mq;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;

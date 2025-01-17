@@ -1,9 +1,9 @@
-package com.zr.yunbackend.auth.annotation;
+package com.zr.yunbackend.manager.auth.annotation;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
 import cn.dev33.satoken.annotation.SaMode;
 import cn.hutool.core.annotation.AliasFor;
-import com.zr.yunbackend.auth.StpKit;
+import com.zr.yunbackend.manager.auth.StpKit;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

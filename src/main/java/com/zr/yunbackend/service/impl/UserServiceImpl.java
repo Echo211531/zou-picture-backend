@@ -5,7 +5,7 @@ import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.zr.yunbackend.auth.StpKit;
+import com.zr.yunbackend.manager.auth.StpKit;
 import com.zr.yunbackend.exception.BusinessException;
 import com.zr.yunbackend.exception.ErrorCode;
 import com.zr.yunbackend.model.dto.user.UserQueryRequest;
@@ -147,6 +147,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
         // 移除登录态
         request.getSession().removeAttribute(USER_LOGIN_STATE);
+        StpKit.SPACE.logout();
         return true;
     }
 

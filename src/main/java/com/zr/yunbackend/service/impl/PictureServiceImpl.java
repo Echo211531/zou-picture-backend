@@ -26,7 +26,7 @@ import com.zr.yunbackend.model.entity.User;
 import com.zr.yunbackend.model.enums.PictureReviewStatusEnum;
 import com.zr.yunbackend.model.vo.PictureVO;
 import com.zr.yunbackend.model.vo.UserVO;
-import com.zr.yunbackend.mq.AiMessageProducer;
+import com.zr.yunbackend.manager.mq.AiMessageProducer;
 import com.zr.yunbackend.service.MessageService;
 import com.zr.yunbackend.service.PictureService;
 import com.zr.yunbackend.mapper.PictureMapper;

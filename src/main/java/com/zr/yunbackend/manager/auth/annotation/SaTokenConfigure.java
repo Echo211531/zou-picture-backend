@@ -1,4 +1,4 @@
-package com.zr.yunbackend.auth.annotation;
+package com.zr.yunbackend.manager.auth.annotation;
 
 import cn.dev33.satoken.interceptor.SaInterceptor;
 import cn.dev33.satoken.strategy.SaAnnotationStrategy;

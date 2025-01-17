@@ -1,4 +1,4 @@
-package com.zr.yunbackend.auth;
+package com.zr.yunbackend.manager.auth;
 import com.zr.yunbackend.model.entity.Picture;
 import com.zr.yunbackend.model.entity.Space;
 import com.zr.yunbackend.model.entity.SpaceUser;

@@ -1,7 +1,7 @@
 package com.zr.yunbackend.controller;
 
 import cn.hutool.core.util.ObjectUtil;
-import com.zr.yunbackend.auth.annotation.SaSpaceCheckPermission;
+import com.zr.yunbackend.manager.auth.annotation.SaSpaceCheckPermission;
 import com.zr.yunbackend.common.BaseResponse;
 import com.zr.yunbackend.common.DeleteRequest;
 import com.zr.yunbackend.common.ResultUtils;

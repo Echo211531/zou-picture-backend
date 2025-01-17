@@ -1,10 +1,10 @@
-package com.zr.yunbackend.auth;
+package com.zr.yunbackend.manager.auth;
 
 import cn.hutool.core.io.resource.ResourceUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
-import com.zr.yunbackend.auth.model.SpaceUserAuthConfig;
-import com.zr.yunbackend.auth.model.SpaceUserRole;
+import com.zr.yunbackend.manager.auth.model.SpaceUserAuthConfig;
+import com.zr.yunbackend.manager.auth.model.SpaceUserRole;
 import com.zr.yunbackend.constant.SpaceUserPermissionConstant;
 import com.zr.yunbackend.model.entity.Space;
 import com.zr.yunbackend.model.entity.SpaceUser;

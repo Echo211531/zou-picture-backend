@@ -1,4 +1,4 @@
-package com.zr.yunbackend.auth.model;
+package com.zr.yunbackend.manager.auth.model;
 
 import lombok.Data;
 

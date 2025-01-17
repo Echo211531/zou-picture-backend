@@ -1,17 +1,13 @@
 package com.zr.yunbackend.controller;
 import cn.hutool.core.util.RandomUtil;
-import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.zr.yunbackend.annotation.AuthCheck;
-import com.zr.yunbackend.api.aliyunai.AliYunApi;
-import com.zr.yunbackend.api.aliyunai.model.CreateOutPaintingTaskResponse;
-import com.zr.yunbackend.api.aliyunai.model.GetOutPaintingTaskResponse;
-import com.zr.yunbackend.auth.SpaceUserAuthManager;
-import com.zr.yunbackend.auth.StpKit;
-import com.zr.yunbackend.auth.annotation.SaSpaceCheckPermission;
+import com.zr.yunbackend.manager.auth.SpaceUserAuthManager;
+import com.zr.yunbackend.manager.auth.StpKit;
+import com.zr.yunbackend.manager.auth.annotation.SaSpaceCheckPermission;
 import com.zr.yunbackend.common.BaseResponse;
 import com.zr.yunbackend.common.DeleteRequest;
 import com.zr.yunbackend.common.ResultUtils;
@@ -35,7 +31,6 @@ import com.zr.yunbackend.service.SpaceService;
 import com.zr.yunbackend.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RLock;
-import org.redisson.api.RateLimiterConfig;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -193,11 +188,11 @@ public class PictureController {
         }
         // 获取权限列表
         User loginUser = userService.getLoginUser(request);
-        List<String> permissionList = spaceUserAuthManager.getPermissionList(space, loginUser);
         PictureVO pictureVO = pictureService.getPictureVO(picture, request);
-        pictureVO.setPermissionList(permissionList);
-        // 获取封装类
-        return ResultUtils.success(pictureService.getPictureVO(picture, request));
+        //把当前用户的权限设置到响应类中，分开写会设置不进去
+        pictureVO.setPermissionList(spaceUserAuthManager.getPermissionList(space, loginUser));
+        // 返回封装类
+        return ResultUtils.success(pictureVO);
     }
 
     //分页获取图片列表（仅管理员可用）

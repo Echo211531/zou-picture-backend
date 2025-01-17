@@ -1,9 +1,7 @@
-package com.zr.yunbackend.mq;
-import cn.hutool.json.JSONUtil;
+package com.zr.yunbackend.manager.mq;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.rabbitmq.client.Channel;
 import com.zr.yunbackend.api.aliyunai.AliYunApi;
-import com.zr.yunbackend.api.aliyunai.model.CreateOutPaintingTaskResponse;
 import com.zr.yunbackend.api.aliyunai.model.GetOutPaintingTaskResponse;
 import com.zr.yunbackend.exception.BusinessException;
 import com.zr.yunbackend.exception.ErrorCode;

@@ -1,4 +1,4 @@
-package com.zr.yunbackend.auth;
+package com.zr.yunbackend.manager.auth;
 
 import cn.dev33.satoken.stp.StpLogic;
 import cn.dev33.satoken.stp.StpUtil;

@@ -1,4 +1,4 @@
-package com.zr.yunbackend.mq;
+package com.zr.yunbackend.manager.mq;
 
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Component;

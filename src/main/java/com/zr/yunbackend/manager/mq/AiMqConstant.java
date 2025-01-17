@@ -1,4 +1,4 @@
-package com.zr.yunbackend.mq;
+package com.zr.yunbackend.manager.mq;
 public interface AiMqConstant {
     //AI扩图队列
     String AI_EXCHANGE_NAME = "outPaintingExchange";
