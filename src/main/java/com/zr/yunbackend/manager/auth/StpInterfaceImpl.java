@@ -46,7 +46,8 @@ public class StpInterfaceImpl implements StpInterface {
     @Resource
     private SpaceUserService spaceUserService;
     @Resource
-    private SpaceUserAuthManager spaceUserAuthManager;
+    private  SpaceUserAuthManager spaceUserAuthManager;
+
     @Resource
     private PictureService pictureService;
 

@@ -177,7 +177,6 @@
                 <version>${spring-boot.version}</version>
                 <configuration>
                     <mainClass>com.zr.yunbackend.ZouPictureBackendApplication</mainClass>
-                    <skip>true</skip>
                 </configuration>
                 <executions>
                     <execution>

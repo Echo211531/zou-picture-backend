@@ -7,6 +7,9 @@ server:
       cookie:
         max-age: 2592000
 spring:
+#  # 默认 dev 环境
+#  profiles:
+#    active: prod
   application:
     name: zou-picture-backend  #指定项目名称，没啥用，有仪式感
     #数据库配置
@@ -26,13 +29,13 @@ spring:
   redisson:
     single-server:
       address: redis://110.40.137.152:6379
-      password: 151212
+      password: xxx
       database: 0
       timeout: 3000
     # rabbitmq 信息
   rabbitmq:
     host: 110.40.137.152
-    password: Zr13970309103
+    password: xxx
     username: guest
     port: 5672             #5672默认是RabbitMQ的web端管理平台的端口；5672是MQ访问的端口
   # 空间图片分表
@@ -44,7 +47,7 @@ spring:
         driver-class-name: com.mysql.cj.jdbc.Driver
         url: jdbc:mysql://localhost:3306/zou_picture
         username: root
-        password: 151212
+        password: xxx
     rules: #分表算法
       sharding: # 动态分表
         tables:
@@ -75,8 +78,8 @@ spring:
 mybatis-plus:
   configuration:
     map-underscore-to-camel-case: false
-    # 仅在开发环境开启日志
-    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+#    # 仅在开发环境开启日志
+#    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
   global-config:
     db-config:
       logic-delete-field: isDelete # 全局逻辑删除的实体字段名
