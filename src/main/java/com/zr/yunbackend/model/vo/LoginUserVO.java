@@ -18,6 +18,7 @@ public class LoginUserVO implements Serializable {
     private String userProfile;
     //用户角色：user/admin
     private String userRole;
+
     // 扩图额度
     private Integer outPaintingQuota;
     //编辑时间
@@ -26,6 +27,8 @@ public class LoginUserVO implements Serializable {
     private Date createTime;
     //更新时间
     private Date updateTime;
-    private static final long serialVersionUID = 1L;
+    //Token
+    private String token;
 
+    private static final long serialVersionUID = 1L;
 }

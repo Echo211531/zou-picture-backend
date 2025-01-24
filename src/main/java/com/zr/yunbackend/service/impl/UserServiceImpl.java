@@ -5,6 +5,7 @@ import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.zr.yunbackend.common.JWTUtil;
 import com.zr.yunbackend.manager.auth.StpKit;
 import com.zr.yunbackend.exception.BusinessException;
 import com.zr.yunbackend.exception.ErrorCode;
@@ -15,11 +16,14 @@ import com.zr.yunbackend.model.enums.UserRoleEnum;
 import com.zr.yunbackend.model.vo.LoginUserVO;
 import com.zr.yunbackend.model.vo.UserVO;
 import com.zr.yunbackend.service.UserService;
+import io.jsonwebtoken.Claims;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
 import java.util.ArrayList;
@@ -85,6 +89,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         BeanUtil.copyProperties(user, loginUserVO); //把user的值全部复制到loginUserVo中
         return loginUserVO;
     }
+    @Resource
+    private JWTUtil jwtUtil;
+    @Resource
+    private StringRedisTemplate stringRedisTemplate;
 
     //用户登录
     @Override
@@ -108,29 +116,33 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         User user = this.baseMapper.selectOne(queryWrapper);
         // 用户不存在
         if (user == null) {
-            log.info("user login failed, userAccount cannot match userPassword");
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户不存在或密码错误");
         }
         // 3. 记录用户的登录态
-        request.getSession().setAttribute(USER_LOGIN_STATE, user);
+        //request.getSession().setAttribute(USER_LOGIN_STATE, user);
+        String token = jwtUtil.generateJwt(user);
+
         // 4. 记录用户登录态到 Sa-token，便于空间鉴权时使用，注意保证该用户信息与 SpringSession 中的信息过期时间一致
         StpKit.SPACE.login(user.getId());
-        StpKit.SPACE.getSession().set(USER_LOGIN_STATE, user);
-        return this.getLoginUserVO(user);
+        StpKit.SPACE.getSession().set(USER_LOGIN_STATE, user)
+                .updateTimeout(172800); // 参数说明和全局有效期保持一致
+
+        // 返回给前端
+        LoginUserVO loginUserVO = getLoginUserVO(user);
+        loginUserVO.setToken(token);
+        return loginUserVO;
     }
 
     //获取当前用户
     @Override
     public User getLoginUser(HttpServletRequest request) {
         // 先判断是否已登录
-        Object userObj = request.getSession().getAttribute(USER_LOGIN_STATE);
-        User currentUser = (User) userObj;
-        if (currentUser == null || currentUser.getId() == null) {
+        Claims claims = (Claims) request.getAttribute("currentUser");
+        if (claims == null) {
             throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
         }
-        // 从数据库查询（追求性能的话可以注释，直接返回上述结果）
-        long userId = currentUser.getId();
-        currentUser = this.getById(userId);
+        Long userId = claims.get("id", Long.class);
+        User currentUser = this.getById(userId);
         if (currentUser == null) {
             throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
         }
@@ -140,13 +152,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     //用户注销
     @Override
     public boolean userLogout(HttpServletRequest request) {
-        // 先判断是否已登录
-        Object userObj = request.getSession().getAttribute(USER_LOGIN_STATE);
-        if (userObj == null) {
+        Claims claims = (Claims) request.getAttribute("currentUser");
+        if (claims == null) {
             throw new BusinessException(ErrorCode.OPERATION_ERROR, "未登录");
         }
+        String jti = claims.getId();
+        stringRedisTemplate.delete(jti);
         // 移除登录态
-        request.getSession().removeAttribute(USER_LOGIN_STATE);
+        //request.getSession().removeAttribute(USER_LOGIN_STATE);
         StpKit.SPACE.logout();
         return true;
     }

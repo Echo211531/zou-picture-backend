@@ -2,43 +2,44 @@ server:
   port: 8123
   servlet:
     context-path: /api    #指定访问后端的上下文路径，即localhost:8123/api
-    # cookie 30 天过期
+    # cookie 2 天过期
     session:
       cookie:
-        max-age: 2592000
+        max-age: 172800
 spring:
-#  # 默认 dev 环境
-#  profiles:
-#    active: prod
+  # 默认 dev 环境
+  profiles:
+    active: prod
   application:
     name: zou-picture-backend  #指定项目名称，没啥用，有仪式感
     #数据库配置
-  datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/zou_picture
-    username: root
-    password: 151212
-  #redis配置
-  redis:
-    database: 0
-    host: 110.40.137.152
-    port: 6379
-    timeout: 5000
-    password: 151212
-  #分布式锁+限流
-  redisson:
-    single-server:
-      address: redis://110.40.137.152:6379
-      password: xxx
-      database: 0
-      timeout: 3000
-    # rabbitmq 信息
-  rabbitmq:
-    host: 110.40.137.152
-    password: xxx
-    username: guest
-    port: 5672             #5672默认是RabbitMQ的web端管理平台的端口；5672是MQ访问的端口
-  # 空间图片分表
+#  datasource:
+#    driver-class-name: com.mysql.cj.jdbc.Driver
+#    url: jdbc:mysql://localhost:3306/zou_picture
+#    username: xxx
+#    password: xxx
+#  #redis配置
+#  redis:
+#    database: 0
+#    host: xxx
+#    port: 6379
+#    timeout: 5000
+#    password: xxx
+#  #分布式锁+限流
+#  redisson:
+#    single-server:
+#      address: redis://xxx
+#      password: xxx
+#      database: 0
+#      timeout: 3000
+#    # rabbitmq 信息
+#  rabbitmq:
+#    host: xxx
+#    password: xxx
+#    username: xxx
+#    port: 5672             #5672默认是RabbitMQ的web端管理平台的端口；5672是MQ访问的端口
+
+    # 空间图片分表
   shardingsphere:
     datasource:
       names: zou_picture  #指定逻辑库名
@@ -46,7 +47,7 @@ spring:
         type: com.zaxxer.hikari.HikariDataSource
         driver-class-name: com.mysql.cj.jdbc.Driver
         url: jdbc:mysql://localhost:3306/zou_picture
-        username: root
+        username: xxx
         password: xxx
     rules: #分表算法
       sharding: # 动态分表
@@ -68,8 +69,8 @@ spring:
   # session 配置
   session:
     store-type: redis
-    # session 30 天过期
-    timeout: 2592000
+    # session 2 天过期
+    timeout: 172800
   servlet:
     multipart:
       max-file-size: 10MB

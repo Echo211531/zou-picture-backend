@@ -4,26 +4,26 @@ spring:
   # 数据库配置
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://110.40.137.152:3306/zoupicture
+    url: jdbc:mysql://xxx/zoupicture
     username: zoupicture
     password: xxx
   #redis配置
   redis:
     database: 0
-    host: 110.40.137.152
+    host: xxx
     port: 6379
     timeout: 5000
     password: xxx
   #分布式锁+限流
   redisson:
     single-server:
-      address: redis://110.40.137.152:6379
+      address: redis://xxx
       password: xxx
       database: 0
       timeout: 3000
     # rabbitmq 信息
   rabbitmq:
-    host: 110.40.137.152
+    host: xxx
     password: xxx
     username: xxx
     port: 5672             #5672默认是RabbitMQ的web端管理平台的端口；5672是MQ访问的端口
@@ -44,11 +44,11 @@ knife4j:
 # 对象存储配置（需要从腾讯云获取）
 cos:
   client:
-    host: xxx  #域名
+    host: xxx   #域名
     secretId: xxx
     secretKey: xxx
-    region: axx
-    bucket: xxx            #存储桶名称
+    region: xxx
+    bucket: xxx               #存储桶名称
 
 
 # 阿里云 AI 配置
