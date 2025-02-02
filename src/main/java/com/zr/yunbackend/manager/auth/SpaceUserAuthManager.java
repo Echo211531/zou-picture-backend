@@ -43,7 +43,7 @@ public class SpaceUserAuthManager {
         }
         // 找到匹配的角色
         SpaceUserRole role = SPACE_USER_AUTH_CONFIG.getRoles().stream()
-                .filter(r -> spaceUserRole.equals(r.getKey())) //查当前要找的角色列表
+                .filter(r -> spaceUserRole.equals(r.getKey()))  //查当前要找的角色列表
                 .findFirst()  //得到这条角色信息
                 .orElse(null);
         if (role == null) { //角色不存在，一般不会出现

@@ -297,37 +297,52 @@ public class PictureController {
 
         //----redisson分布式锁----
         RLock lock = redissonClient.getLock(lockKey); //获取一个分布式锁
-        try {
-            // 尝试获取该锁，最多等待10秒，上锁以后10秒自动解锁
-            //如果某个线程成功获取该锁，就执行if内部逻辑，再次期间其他线程访问时被阻塞
-            if (lock.tryLock(10, 10, TimeUnit.SECONDS)) {
-                try {
-                    //---数据库----
-                    // 4. redis缓存为空，则查询数据库
-                    Page<Picture> picturePage = pictureService.page(new Page<>(current, size),
-                            pictureService.getQueryWrapper(pictureQueryRequest));
-                    // 获取封装类
-                    Page<PictureVO> pictureVOPage = pictureService.getPictureVOPage(picturePage, request);
+        // 本地缓存和Redis缓存均未命中时，进行第一重检查
+        if (cachedValue == null) {
+            try {
+                // 尝试获取该锁，最多等待10秒，上锁以后10秒自动解锁
+                //如果某个线程成功获取该锁，就执行if内部逻辑，再次期间其他线程访问时被阻塞
+                if (lock.tryLock(10, 10, TimeUnit.SECONDS)) {
+                    try {
+                        // 第二重检查：再次查询Redis缓存，防止在获取锁的过程中其他线程已经更新了缓存
+                        cachedValue = valueOps.get(cacheKey);
+                        if (cachedValue == null) { // 如果仍然没有数据，则查询数据库
+                            //---数据库----
+                            // 4. redis缓存为空，则查询数据库
+                            Page<Picture> picturePage = pictureService.page(new Page<>(current, size),
+                                    pictureService.getQueryWrapper(pictureQueryRequest));
+                            // 获取封装类
+                            Page<PictureVO> pictureVOPage = pictureService.getPictureVOPage(picturePage, request);
 
-                    // 5. 序列化更新Redis缓存
-                    String cacheValue = JSONUtil.toJsonStr(pictureVOPage);
-                    // 6. 序列化更新本地缓存
-                    LOCAL_CACHE.put(cacheKey, cacheValue);
-                    // 2-4分钟随机过期，防止雪崩
-                    int cacheExpireTime = 120 +  RandomUtil.randomInt(0, 120); //秒为单位
-                    valueOps.set(cacheKey, cacheValue, cacheExpireTime, TimeUnit.SECONDS); //哪怕查出来的是null，也设置到缓存，防止穿透
-                    // 返回结果
-                    return ResultUtils.success(pictureVOPage);
-                } finally {
-                    // 确保在任何情况下都会尝试释放锁
-                    lock.unlock();
+                            // 5. 序列化更新Redis缓存
+                            String cacheValue = JSONUtil.toJsonStr(pictureVOPage);
+                            // 6. 序列化更新本地缓存
+                            LOCAL_CACHE.put(cacheKey, cacheValue);
+                            // 2-4分钟随机过期，防止雪崩
+                            int cacheExpireTime = 120 + RandomUtil.randomInt(0, 120); //秒为单位
+                            valueOps.set(cacheKey, cacheValue, cacheExpireTime, TimeUnit.SECONDS); //哪怕查出来的是null，也设置到缓存，防止穿透
+                            // 返回结果
+                            return ResultUtils.success(pictureVOPage);
+                        } else {
+                            // 如果在锁定期间另一个线程已填充缓存，则直接反序列化并返回
+                            Page<PictureVO> cachedPage = JSONUtil.toBean(cachedValue, Page.class);
+                            return ResultUtils.success(cachedPage);
+                        }
+                    } finally {
+                        // 确保在任何情况下都会尝试释放锁
+                        lock.unlock();
+                    }
+                } else {
+                    throw new BusinessException(ErrorCode.SYSTEM_ERROR, "获取锁失败");
                 }
-            } else {
-                throw new BusinessException(ErrorCode.SYSTEM_ERROR, "获取锁失败");
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new BusinessException(ErrorCode.SYSTEM_ERROR);
             }
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new BusinessException(ErrorCode.SYSTEM_ERROR);
+        } else {
+            // 如果在进入锁区域之前缓存已经被填充，则直接反序列化并返回
+            Page<PictureVO> cachedPage = JSONUtil.toBean(cachedValue, Page.class);
+            return ResultUtils.success(cachedPage);
         }
     }
 
