@@ -7,6 +7,7 @@ import org.springframework.web.servlet.HandlerInterceptor;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.PrintWriter;
 
 
 @Slf4j
@@ -27,8 +28,13 @@ public class LoginInterceptor implements HandlerInterceptor {
                 request.setAttribute("currentUser", claims);
                 return true;
             } else {
-                // Token无效或过期，返回401状态码并终止请求
-                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
+                // Token无效或过期，返回特定格式的JSON响应,提示前端token过期，去删除token
+                response.setContentType("application/json");
+                response.setCharacterEncoding("UTF-8");
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                PrintWriter out = response.getWriter();
+                out.print("{\"code\": 401, \"message\": \"Token expired\"}");
+                out.flush();
                 return false;
             }
         }
