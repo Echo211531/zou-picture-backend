@@ -28,4 +28,6 @@ public interface PictureService extends IService<Picture> {
     List<Picture> getPicturesBySpaceId(Long spaceId);
     void deletePicture(long pictureId, User loginUser);
     void createPictureOutPaintingTask(CreatePictureOutPaintingTaskRequest createPictureOutPaintingTaskRequest, User loginUser);
+    List<PictureVO> searchPictureByColor(Long spaceId,String picColor, User loginUser);
+
 }

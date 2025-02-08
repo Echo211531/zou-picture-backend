@@ -32,6 +32,7 @@ import com.zr.yunbackend.service.PictureService;
 import com.zr.yunbackend.mapper.PictureMapper;
 import com.zr.yunbackend.service.SpaceService;
 import com.zr.yunbackend.service.UserService;
+import com.zr.yunbackend.utils.ColorSimilarUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -43,8 +44,10 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.awt.*;
 import java.io.IOException;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -148,6 +151,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
         picture.setPicSize(uploadPictureResult.getPicSize());
         picture.setPicWidth(uploadPictureResult.getPicWidth());
         picture.setPicHeight(uploadPictureResult.getPicHeight());
+        picture.setPicColor(uploadPictureResult.getPicColor());  //保存图片主色调
         picture.setPicScale(uploadPictureResult.getPicScale());
         picture.setPicFormat(uploadPictureResult.getPicFormat());
         picture.setUserId(loginUser.getId());
@@ -509,6 +513,48 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
         QueryWrapper<Picture> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("space_id", spaceId);
         return this.list(queryWrapper);  // 使用 MyBatis-Plus 提供的 list 方法进行查询
+    }
+
+    //按颜色查询图片
+    @Override
+    public List<PictureVO> searchPictureByColor(Long spaceId,String picColor, User loginUser) {
+        // 1.校验空间颜色参数是否为空
+        ThrowUtils.throwIf(spaceId ==null||StrUtil.isBlank(picColor), ErrorCode.PARAMS_ERROR);
+        // 2.校验用户信息，登录用户才能颜色搜索
+        ThrowUtils.throwIf(loginUser == null, ErrorCode.NO_AUTH_ERROR);
+        // 3.将目标颜色转为 Color 对象
+        Color targetColor = Color.decode(picColor);
+
+        // 查询公共图库中已通过审核 所有有主色调的图片（即 spaceId 为 null）
+        List<Picture> pictureList = this.lambdaQuery()
+                .isNull(Picture::getSpaceId) // 确保只查询公共图库中的图片
+                .eq(Picture::getReviewStatus, 1) // 添加此行以确保只查询已通过审核的图片
+                .isNotNull(Picture::getPicColor) // 确保图片有主色调
+                .list();
+
+        // 如果没有符合条件的图片，直接返回空列表
+        if (CollUtil.isEmpty(pictureList)) {
+            return Collections.emptyList();
+        }
+
+        // 计算相似度并排序
+        List<Picture> sortedPictures = pictureList.stream()  //将搜索出来的图片转成流
+                .sorted(Comparator.comparingDouble(picture -> { //对流中的元素进行排序
+                    String hexColor = picture.getPicColor();
+                    if (StrUtil.isBlank(hexColor)) {
+                        return Double.MAX_VALUE; //如果该图片没有设置主色调颜色，排序时被放在最后
+                    }
+                    Color pictureColor = Color.decode(hexColor);
+                    // 计算当前图片颜色与目标颜色之间的相似度 从高到低排序
+                    return -ColorSimilarUtils.calculateSimilarity(targetColor, pictureColor);
+                }))
+                .limit(12)  //限制最终返回的结果数量
+                .collect(Collectors.toList());  //收集到一个新的列表
+
+        // 转换为 PictureVO
+        return sortedPictures.stream()
+                .map(PictureVO::objToVo)
+                .collect(Collectors.toList());
     }
 
     @Resource

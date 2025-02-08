@@ -70,7 +70,10 @@ public class Picture implements Serializable {
 
     //审核时间
     private Date reviewTime;
-
+    /**
+     * 图片主色调
+     */
+    private String picColor;
     //是否删除
     @TableLogic
     private Integer isDelete;
