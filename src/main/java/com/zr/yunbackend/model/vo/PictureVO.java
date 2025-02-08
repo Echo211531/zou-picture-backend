@@ -60,6 +60,10 @@ public class PictureVO implements Serializable {
      * 图片主色调
      */
     private String picColor;
+    /**
+     * 图片指纹
+     */
+    private long hashValue;
 
     //创建时间  
     private Date createTime;

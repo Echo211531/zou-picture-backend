@@ -399,16 +399,6 @@ public class PictureController {
         pictureService.doPictureReview(pictureReviewRequest, loginUser);
         return ResultUtils.success(true);
     }
-    //颜色搜索
-    @PostMapping("/search/color")
-    public BaseResponse<List<PictureVO>> searchPictureByColor(@RequestBody SearchPictureByColorRequest searchPictureByColorRequest, HttpServletRequest request) {
-        ThrowUtils.throwIf(searchPictureByColorRequest == null, ErrorCode.PARAMS_ERROR);
-        String picColor = searchPictureByColorRequest.getPicColor();  //获取主色调
-        Long spaceId = searchPictureByColorRequest.getSpaceId();   //获取空间id
-        User loginUser = userService.getLoginUser(request);
-        List<PictureVO> result = pictureService.searchPictureByColor(spaceId, picColor, loginUser);
-        return ResultUtils.success(result);
-    }
 
     @Resource
     private RedisLimiterManager redisLimiterManager;
@@ -445,5 +435,27 @@ public class PictureController {
 //        return ResultUtils.success(task);
 //    }
 
+    //颜色搜索
+    @PostMapping("/search/color")
+    public BaseResponse<List<PictureVO>> searchPictureByColor(@RequestBody SearchPictureByColorRequest searchPictureByColorRequest, HttpServletRequest request) {
+        ThrowUtils.throwIf(searchPictureByColorRequest == null, ErrorCode.PARAMS_ERROR);
+        String picColor = searchPictureByColorRequest.getPicColor();  //获取主色调
+        Long spaceId = searchPictureByColorRequest.getSpaceId();   //获取空间id
+        User loginUser = userService.getLoginUser(request);
+        List<PictureVO> result = pictureService.searchPictureByColor(spaceId, picColor, loginUser);
+        return ResultUtils.success(result);
+    }
+    //以图搜图
+    @PostMapping("/search/image")
+    public BaseResponse<List<PictureVO>> searchSimilarImages(@RequestParam("imageFile") MultipartFile imageFile,
+                                                             HttpServletRequest request) {
+        ThrowUtils.throwIf(imageFile == null, ErrorCode.PARAMS_ERROR);
+        User loginUser = userService.getLoginUser(request);
+        //限流判断
+        //每个用户一个限流器
+        redisLimiterManager.doRateLimit("createPictureByAi"+loginUser.getId());
+        List<PictureVO> result = pictureService.searchSimilarImages(imageFile, loginUser);
+        return ResultUtils.success(result);
+    }
 }
 

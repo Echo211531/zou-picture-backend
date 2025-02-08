@@ -6,6 +6,8 @@ import com.zr.yunbackend.model.entity.Picture;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.zr.yunbackend.model.entity.User;
 import com.zr.yunbackend.model.vo.PictureVO;
+import org.springframework.web.multipart.MultipartFile;
+
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
@@ -29,5 +31,5 @@ public interface PictureService extends IService<Picture> {
     void deletePicture(long pictureId, User loginUser);
     void createPictureOutPaintingTask(CreatePictureOutPaintingTaskRequest createPictureOutPaintingTaskRequest, User loginUser);
     List<PictureVO> searchPictureByColor(Long spaceId,String picColor, User loginUser);
-
+    List<PictureVO> searchSimilarImages(MultipartFile imageFile, User loginUser);
 }

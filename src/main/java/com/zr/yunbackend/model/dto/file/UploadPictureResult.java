@@ -29,5 +29,9 @@ public class UploadPictureResult {
      * 图片主色调
      */
     private String picColor;
+    /**
+     * 图片指纹
+     */
+    private long hashValue;
 
 }

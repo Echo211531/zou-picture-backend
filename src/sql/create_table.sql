@@ -98,3 +98,6 @@ create table if not exists space_user
 
 ALTER TABLE picture
     ADD COLUMN picColor varchar(16) null comment '图片主色调';
+
+ALTER TABLE picture
+    ADD COLUMN hashValue varchar(100) null comment '图片指纹';

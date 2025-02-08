@@ -46,6 +46,12 @@
             <artifactId>redisson</artifactId>
             <version>3.17.6</version>
         </dependency>
+        <!--图像处理库-->
+        <dependency>
+            <groupId>net.coobird</groupId>
+            <artifactId>thumbnailator</artifactId>
+            <version>0.4.20</version>
+        </dependency>
         <!-- HTML 解析：https://jsoup.org/ -->
         <dependency>
             <groupId>org.jsoup</groupId>

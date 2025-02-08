@@ -18,6 +18,8 @@
             <result property="picFormat" column="picFormat" jdbcType="VARCHAR"/>
             <result property="userId" column="userId" jdbcType="BIGINT"/>
             <result property="spaceId" column="spaceId" jdbcType="BIGINT"/>
+            <result property="picColor" column="picColor" jdbcType="VARCHAR"/>
+            <result property="hashValue" column="hashValue" jdbcType="BIGINT"/>
             <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
             <result property="editTime" column="editTime" jdbcType="TIMESTAMP"/>
             <result property="updateTime" column="updateTime" jdbcType="TIMESTAMP"/>

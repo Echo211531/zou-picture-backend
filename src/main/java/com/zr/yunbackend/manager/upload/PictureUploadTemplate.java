@@ -14,11 +14,15 @@ import com.zr.yunbackend.exception.BusinessException;
 import com.zr.yunbackend.exception.ErrorCode;
 import com.zr.yunbackend.manager.CosManager;
 import com.zr.yunbackend.model.dto.file.UploadPictureResult;
+import com.zr.yunbackend.service.PictureService;
+import com.zr.yunbackend.utils.DhashUtils;
 import lombok.extern.slf4j.Slf4j;
 
 
 import javax.annotation.Resource;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 
@@ -28,7 +32,7 @@ public abstract class PictureUploadTemplate {
     protected CosManager cosManager;
     @Resource  
     protected CosClientConfig cosClientConfig;
-  
+
     //模板方法，定义上传流程  
     public final UploadPictureResult uploadPicture(Object inputSource, String uploadPathPrefix) {
         // 1. 校验图片  
@@ -63,7 +67,7 @@ public abstract class PictureUploadTemplate {
                 //获取压缩之后的结果
                 CIObject compressedCiObject = objectList.get(0);  //因为当前只处理一张图片
                 // 封装压缩图返回结果
-                return buildResult(originFilename, compressedCiObject,imageInfo);
+                return buildResult(originFilename, compressedCiObject,imageInfo,file);
             }
             // 封装原图返回结果
             return buildResult(originFilename, file, uploadPath, imageInfo);
@@ -99,11 +103,22 @@ public abstract class PictureUploadTemplate {
         uploadPictureResult.setPicFormat(imageInfo.getFormat());
         uploadPictureResult.setPicColor(imageInfo.getAve());  //获取图片主色调
         uploadPictureResult.setPicSize(FileUtil.size(file));  
-        uploadPictureResult.setUrl(cosClientConfig.getHost() + "/" + uploadPath);  
+        uploadPictureResult.setUrl(cosClientConfig.getHost() + "/" + uploadPath);
+
+        try (FileInputStream fis = new FileInputStream(file)) {
+            long hashValue = DhashUtils.getImageDhashFrom(fis);
+            // 计算 hashValue 并存储到数据库
+            uploadPictureResult.setHashValue(hashValue);
+        }catch (IOException e) {
+            log.error("计算图片 hashValue 失败", e);
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "计算图片指纹失败");
+        }
         return uploadPictureResult;  
     }
+
     //封装返回结果2
-    private UploadPictureResult buildResult(String originFilename, CIObject compressedCiObject,ImageInfo imageInfo) {
+    private UploadPictureResult buildResult(String originFilename,
+                                            CIObject compressedCiObject,ImageInfo imageInfo,File file) {
         // 封装结果到UploadPictureResult 中并返回
         UploadPictureResult uploadPictureResult = new UploadPictureResult();
         int picWidth = compressedCiObject.getWidth();  //直接从图片处理成功后的结果中拿属性
@@ -118,8 +133,19 @@ public abstract class PictureUploadTemplate {
         uploadPictureResult.setPicSize(compressedCiObject.getSize().longValue());
         // 设置图片为压缩后的地址
         uploadPictureResult.setUrl(cosClientConfig.getHost() + "/" + compressedCiObject.getKey());
+
+        try (FileInputStream fis = new FileInputStream(file)) {
+            long hashValue = DhashUtils.getImageDhashFrom(fis);
+            // 计算 hashValue 并存储到数据库
+            uploadPictureResult.setHashValue(hashValue);
+        }catch (IOException e) {
+            log.error("计算图片 hashValue 失败", e);
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "计算图片指纹失败");
+        }
+
         return uploadPictureResult;
     }
+
     //删除临时文件   
     public void deleteTempFile(File file) {  
         if (file == null) {  
