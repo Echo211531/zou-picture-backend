@@ -518,24 +518,27 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
     //按颜色查询图片
     @Override
     public List<PictureVO> searchPictureByColor(Long spaceId,String picColor, User loginUser) {
-        // 1.校验空间颜色参数是否为空
-        ThrowUtils.throwIf(spaceId ==null||StrUtil.isBlank(picColor), ErrorCode.PARAMS_ERROR);
+        // 1. 校验参数
+        ThrowUtils.throwIf(spaceId == null || StrUtil.isBlank(picColor), ErrorCode.PARAMS_ERROR);
         // 2.校验用户信息，登录用户才能颜色搜索
         ThrowUtils.throwIf(loginUser == null, ErrorCode.NO_AUTH_ERROR);
-        // 3.将目标颜色转为 Color 对象
-        Color targetColor = Color.decode(picColor);
-
-        // 查询公共图库中已通过审核 所有有主色调的图片（即 spaceId 为 null）
+        // 3. 校验空间权限
+        Space space = spaceService.getById(spaceId);
+        ThrowUtils.throwIf(space == null, ErrorCode.NOT_FOUND_ERROR, "空间不存在");
+        if (!loginUser.getId().equals(space.getUserId())) {
+            throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "没有空间访问权限");
+        }
+        // 3. 查询该空间下所有图片（必须有主色调）
         List<Picture> pictureList = this.lambdaQuery()
-                .isNull(Picture::getSpaceId) // 确保只查询公共图库中的图片
-                .eq(Picture::getReviewStatus, 1) // 添加此行以确保只查询已通过审核的图片
-                .isNotNull(Picture::getPicColor) // 确保图片有主色调
+                .eq(Picture::getSpaceId, spaceId)
+                .isNotNull(Picture::getPicColor)
                 .list();
-
-        // 如果没有符合条件的图片，直接返回空列表
+        // 如果没有图片，直接返回空列表
         if (CollUtil.isEmpty(pictureList)) {
             return Collections.emptyList();
         }
+        // 将目标颜色转为 Color 对象
+        Color targetColor = Color.decode(picColor);
 
         // 计算相似度并排序
         List<Picture> sortedPictures = pictureList.stream()  //将搜索出来的图片转成流
