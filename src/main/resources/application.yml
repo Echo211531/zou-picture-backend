@@ -7,37 +7,12 @@ server:
       cookie:
         max-age: 172800
 spring:
-  # 默认 dev 环境
+#  # 默认 dev 环境
   profiles:
     active: prod
   application:
     name: zou-picture-backend  #指定项目名称，没啥用，有仪式感
-    #数据库配置
-#  datasource:
-#    driver-class-name: com.mysql.cj.jdbc.Driver
-#    url: jdbc:mysql://localhost:3306/zou_picture
-#    username: xxx
-#    password: xxx
-#  #redis配置
-#  redis:
-#    database: 0
-#    host: xxx
-#    port: 6379
-#    timeout: 5000
-#    password: xxx
-#  #分布式锁+限流
-#  redisson:
-#    single-server:
-#      address: redis://xxx
-#      password: xxx
-#      database: 0
-#      timeout: 3000
-#    # rabbitmq 信息
-#  rabbitmq:
-#    host: xxx
-#    password: xxx
-#    username: xxx
-#    port: 5672             #5672默认是RabbitMQ的web端管理平台的端口；5672是MQ访问的端口
+
 
     # 空间图片分表
   shardingsphere:
