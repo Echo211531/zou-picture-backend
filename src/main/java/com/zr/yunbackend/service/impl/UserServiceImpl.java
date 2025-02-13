@@ -6,6 +6,7 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.zr.yunbackend.common.JWTUtil;
+import com.zr.yunbackend.common.UserContext;
 import com.zr.yunbackend.manager.auth.StpKit;
 import com.zr.yunbackend.exception.BusinessException;
 import com.zr.yunbackend.exception.ErrorCode;
@@ -137,7 +138,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Override
     public User getLoginUser(HttpServletRequest request) {
         // 先判断是否已登录
-        Claims claims = (Claims) request.getAttribute("currentUser");
+        Claims claims = UserContext.getCurrentUser();
         if (claims == null) {
             throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
         }
@@ -152,7 +153,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     //用户注销
     @Override
     public boolean userLogout(HttpServletRequest request) {
-        Claims claims = (Claims) request.getAttribute("currentUser");
+        Claims claims = UserContext.getCurrentUser();
         if (claims == null) {
             throw new BusinessException(ErrorCode.OPERATION_ERROR, "未登录");
         }

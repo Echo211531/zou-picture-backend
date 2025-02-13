@@ -52,6 +52,7 @@ public class DhashUtils {
         return hammingDistanceBetween(str1,str2);
     }
 
+    //海明距离
     public static int distanceBetween(long hashValue1, long hashValue2) {
         String str1 = BitUtils.longToStr64(hashValue1);
         String str2 = BitUtils.longToStr64(hashValue2);

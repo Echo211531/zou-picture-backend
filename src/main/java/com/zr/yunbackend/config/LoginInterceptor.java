@@ -1,5 +1,6 @@
 package com.zr.yunbackend.config;
 import com.zr.yunbackend.common.JWTUtil;
+import com.zr.yunbackend.common.UserContext;
 import io.jsonwebtoken.Claims;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -25,7 +26,8 @@ public class LoginInterceptor implements HandlerInterceptor {
             Claims claims = jwtUtil.checkJwt(token);
             if (claims != null) {
                 // 如果有有效的Token，则设置到当前请求的currentUser，并允许请求继续
-                request.setAttribute("currentUser", claims);
+                // 使用ThreadLocal设置当前用户
+                UserContext.setCurrentUser(claims);
                 return true;
             } else {
                 // Token无效或过期，返回特定格式的JSON响应,提示前端token过期，去删除token
@@ -40,5 +42,10 @@ public class LoginInterceptor implements HandlerInterceptor {
         }
         //如果没有token，正常放行，后端做了用户的权限校验
         return true;
+    }
+    @Override
+    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
+        // 请求完成后清除ThreadLocal中的用户信息
+        UserContext.removeCurrentUser();
     }
 }
