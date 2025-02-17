@@ -100,11 +100,14 @@ public class AiTaskConsumer {
     //最终确认消息
     private void confirmMessage(Channel channel, long deliveryTag, GetOutPaintingTaskResponse taskStatus) {
         try {
-            if (taskStatus == null || !"SUCCEEDED".equals(taskStatus.getOutput().getTaskStatus()) && !"FAILED".equals(taskStatus.getOutput().getTaskStatus())) {
+            if (taskStatus == null || (!"SUCCEEDED".equals(taskStatus.getOutput().getTaskStatus()) && !"FAILED".equals(taskStatus.getOutput().getTaskStatus()))) {
                 // 如果任务状态不确定或者未完成，则重新排队消息
                 channel.basicNack(deliveryTag, false, true);
+            } else if ("FAILED".equals(taskStatus.getOutput().getTaskStatus())) {
+                // 如果任务明确失败，则拒绝消息并不重新排队，使其进入死信队列
+                channel.basicNack(deliveryTag, false, false);
             } else {
-                // 成功或失败都确认消息
+                // 成功确认消息
                 channel.basicAck(deliveryTag, false);
             }
         } catch (IOException e) {
