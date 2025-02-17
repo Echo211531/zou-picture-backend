@@ -51,11 +51,13 @@ public class QueueInitializer implements ApplicationListener<ContextRefreshedEve
             deadArgs.put("x-dead-letter-exchange",deadExchangeName );
             deadArgs.put("x-dead-letter-routing-key",deadKey);
 
-            // 将队列与交换机进行绑定，并配置死信交换机和死信路由键
+            // 将队列与交换机进行绑定，被配置路由键，并配置死信交换机和死信路由键
             channel.queueBind(queueName,exchangeName, key,deadArgs);
-
+            Map<String, Object> deadQueueArgs = new HashMap<>();
+            deadQueueArgs.put("x-message-ttl", 86400000); // 设置TTL为1天（单位毫秒）
             // 声明死信队列，并将其绑定到死信交换机
-            channel.queueDeclare(deadQueueName,true,false,false,null);
+            channel.queueDeclare(deadQueueName, true, false, false, deadQueueArgs);
+
             channel.queueBind(deadQueueName,deadExchangeName,deadKey);
         } catch (Exception e) {
             // 处理异常情况
