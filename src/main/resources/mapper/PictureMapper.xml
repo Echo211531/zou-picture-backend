@@ -30,7 +30,7 @@
         id,url,name,
         introduction,category,tags,
         picSize,picWidth,picHeight,
-        picScale,picFormat,userId,spaceId,
+        picScale,picFormat,userId,spaceId,picColor,hashValue,
         createTime,editTime,updateTime,
         isDelete
     </sql>
